@@ -1,0 +1,86 @@
+select * from products;
+select * from orders;
+select * from order_details;
+select * from customers;
+
+# 1. List all the information of product that has "CPU" in description.
+
+Select * from products
+where description like '%CPU%';
+
+# 2. Report the average, cheapest and the most expensive product (by price).
+
+select avg(price) As Average , min(price) As Cheapest, max(price) As Most_Expensive
+from products;
+
+#3. Create a new table called "Vendors" containing "vid", "name" and "address".
+ 
+CREATE TABLE Vendors
+(
+vid int,
+name varchar(255),
+Address varchar(255)
+);
+
+select * from vendors;
+# 4. Continue from question 3, insert three records like below:
+
+INSERT INTO vendors
+ (vid, name , Address)
+VALUES
+( '1', 'Best buy', '1234 Sample st CA'),
+('2', 'Worst Buy', '555 Random St NY'),
+('3', 'Medium Buy', '42 Life St CA');
+
+#5. Add a new column called "vid" under Orders and make it as Reference Key to Vendors table above
+#Make sure to submit all queries you did to make it happen (may be more than one)
+select * from orders;
+select * from order_details;
+
+#6. For each product, list the customers that buys it (the one that bought the
+#product through orders) customers' name and their addresses
+select fname As First_Name, lname As Last_Name, address from customers c
+inner join orders O
+On c.cid = O.cid
+inner join order_details od
+on o.oid = od.oid
+group by address;
+
+#7. List the orders that is ordered between 2015-05-01 to 2015-07-21 (check odate)
+
+select odate from orders
+where  odate between '2015-05-01' and '2015-07-21';
+
+#8. Count the number of records that is between year of 1800 to 1900
+
+db.pitching.count({"year":{$gt:1800},"year":{$lt:1900}});
+
+#9. Count the number of players by league_id and team_id and order them by league_id and number of players (in this order)
+
+ db.pitching.aggregate([ 
+  {
+    $group:{_id:{team:"$team_id", league:"$league_id"},
+      count_h:{$count:"$h"}, 
+      count_er:{$count:"$er"}}
+  },
+  
+  {
+    $group:{_id:{team:"$team_id", league:"$league_id"},players:{$sum: 1}}}, 
+    {$sort:{players:-1}}
+  }
+ ]);
+ 
+
+
+# 10. Find out the player with the highest "w", the player with highest "l", and the player with highest "g" (including player_id and their w, l and g stat) group by
+#league_id and team_id 
+
+db.pitching.aggregate([
+{$match:{ipouts:{$gte: 0}}},	
+	{$sort:	{ipouts:-1}},
+	{$group: {_id:{league:"$league_id",team:"$team_id "},
+    ipouts:{$first:"$w"},
+    ipouts:{$first:"$l"},
+    ipouts:{$first:"$g"},
+	player_id:{$first:"$player_id"}}}
+]);
